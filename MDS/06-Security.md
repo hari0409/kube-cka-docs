@@ -315,3 +315,138 @@ kubectl can-i verb resource --as userName --namespace namespaceName
     automountServiceAccountToken: true
   ```
   * Acces the token from the mounted folder.
+
+## Pulling Secure Image:
+* When we want to access images in a private repo, we have to give the credentials as a `secret` which will be of type `docker-registry`.
+* This can be done by the command 
+```bash
+kubectl create secret docker-registry secretName 
+--docker-server=private-reg.io 
+--docker-username=usrName 
+--docker-password=Password 
+--docker-email=user@gmail.com
+```
+* Then we can specify the security in the pod as the field `imagePullSecrets` with an array of secrets
+```yaml
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: frontend-pod
+spec:
+  containers:
+    - name: frontend-container
+      image: frontend-image
+  imagePullSecrets:
+    - name: secretName1
+    - name: secretName2
+```
+
+## Security Context:
+* This can be done on two level:
+  * Pod (runAsUser, runAsGroup)
+  * Containter (runAsUser, runAsGroup, capabilities, allowPrivilegeEscalation)
+* The pod configuration cannot add capabilities changes. 
+* Sample Config File:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: frontend-pod
+spec:
+  securityContext:  
+    runAsUser: 1000
+    runAsGroup: 3000
+  containers:
+    - name: frontend-container
+      image: frontend-image
+      securityContext:
+        runAsUser: 1000
+        capabilities:
+          add: 
+            - SYS_TIME
+            - MAC_ADMIN
+        allowPrivilegeEscalation: false
+```
+
+## Network Policies:
+* This can be used for restricting network traffic between the pods. This is done by means of NetworkPolicy config file
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: 
+  name: db-policy
+spec: 
+  podSelector: # Pod to which this is applied
+    matchLabels:
+      label: value
+  policyTypes:
+    - Ingress # If need to modify the Incoming Requests
+    - Egress # If to modify the outgoing requests
+  ingress:
+    - from:
+        - ipblock:
+          cidr: 193.45.23.0/24
+        - podSelector:
+            matchLabels:
+              label: value
+        - namespaceSelector:
+            matchLabels:
+              label: value 
+      ports:
+        - protocol: TCP
+          port: 8008
+  egress:
+    - to:
+        - ipblock:  
+            cidr: 12.23.34.0/24
+        - podSelector:
+            matchLabels:
+              label: value
+        - namespaceSelector:
+            matchLabels:
+              label: value
+      ports:
+        - protocol: TCP
+          port: 8434
+```
+* If to block all Ingress Traffic:
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: 
+  name: db-policy
+spec: 
+  podSelector: # Pod to which this is applied
+    matchLabels:
+      label: value
+  policyTypes:
+    - Ingress # If need to modify the Incoming Requests
+```
+* To block all Egress Traffic:
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: 
+  name: db-policy
+spec: 
+  podSelector: # Pod to which this is applied
+    matchLabels:
+      label: value
+  policyTypes:
+    - Egress # If need to modify the Incoming Requests
+```
+* To allow it, add the field & make it empty.
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: 
+  name: db-policy
+spec: 
+  podSelector: # Pod to which this is applied
+    matchLabels:
+      label: value
+  policyTypes:
+    - Ingress # If need to modify the Incoming Requests
+  ingress:
+    - {}
+```

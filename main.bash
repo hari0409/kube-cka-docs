@@ -1,1 +1,1 @@
-kubectl create token saName
+kubena <namespace>
