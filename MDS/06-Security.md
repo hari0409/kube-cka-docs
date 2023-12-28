@@ -384,8 +384,8 @@ spec:
     - Egress # If to modify the outgoing requests
   ingress:
     - from:
-        - ipblock:
-          cidr: 193.45.23.0/24
+        - ipBlock:
+            cidr: 193.45.23.0/24
         - podSelector:
             matchLabels:
               label: value
@@ -397,7 +397,7 @@ spec:
           port: 8008
   egress:
     - to:
-        - ipblock:  
+        - ipBlock:  
             cidr: 12.23.34.0/24
         - podSelector:
             matchLabels:
