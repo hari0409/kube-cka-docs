@@ -196,5 +196,122 @@ users:
     * ABAC (Assigned for each user based on requirement)
     * RBAC (Assigna role & permissions for each role)
     * Webhooks (3rd Party Authentication)
-* RBAC (Role Based Access Control):
-    * 
+* RBAC Namespaced=True:
+    * When we want to make config for namespace resources, we need to make `Role` & `RoleBdining`.
+    * Role would require `apiGroups`, `resources`, `verbs`,`resourceNames` to which we need to give access.
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: role-name
+    rules:
+      - apiGroups: [""]
+        resources: [“pods”,”pods/logs”]
+        verbs: ["list","get","create","update","delete"]
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        verbs: ["create"]
+      - apiGroups: [""]
+        resources: ["rs"]
+        verbs: ["*"]
+    ```
+    * Rolebinding would require the role & the users/groups as subjects.
+    ```yaml
+    apiVerion: rbac.authorization.k8s.io
+    kind: RoleBinding
+    metadata:
+      name: userName-roleName-binding
+      namespace: development
+    subjects:
+      - kind: User
+        name: userName
+        apiGroup: rbac.authorization.k8s.io
+    roleRef:
+      kind: Role
+      name: developer
+      apiGroup: rbac.authorization.k8s.io
+    ```
+* RBAC Namespaced=False:
+    * Here we would be creating the same but for the cluster resources. We can also do for the namespace resource which will lead the resource under all the namespace to be accessible.
+    * This is given as ClusterRole
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      creationTimestamp: "2023-12-28T07:44:25Z"
+      name: storage-admin
+      resourceVersion: "927"
+      uid: 51a0ddd6-3c35-4860-a591-363337c2adce
+    rules:
+    - apiGroups:
+      - ""
+      resources:
+      - persistentvolumes
+      verbs:
+      - '*'
+    - apiGroups:
+      - storage.k8s.io
+      resources:
+      - storageclasses
+      verbs:
+      - '*'
+    ```
+    * Then we will give the ClusterRoleBinding:
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: michelle-storage-admin
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: storage-admin
+    subjects:
+    - apiGroup: rbac.authorization.k8s.io
+      kind: User
+      name: michelle
+    - apiGroup: rbac.authorization.k8s.io
+      kind: Group
+      name: system:masters
+    ```
+* We can create the Role, ClusterRole using the command `kubectl create -f role.yaml | cluster-role.yaml`.
+* We can create the RoleBinding or ClusterRoleBinding using the command `kubectl create -f rb.yaml | crb.yaml`.
+* To check if a user can do a particular action
+```bash
+kubectl can-i verb resource --as userName --namespace namespaceName
+```
+* To check the resources under namespace `kubectl api-resources namespaced=true` & for cluster resources, `kubectl api-resources namespaced=false`.
+
+## Service Accounts
+* This is used by application to access the kube cluster. 
+* Steps in using a Service Account:
+  * Create a Service Account using the command `kubectl create sa saName`. 
+  * Create a Secret Token either by TokenRequest API or Secret Token Config file based on requirement.
+    * For TokenRequest API, use the command `kubectl create token saName`.
+    * For Service Account Token, 
+    ```yaml
+    apiVersion: v1
+    kind: Secret
+    type: kubernetes.io/service-account-token
+    metadata: 
+      name: serviceAccountToken
+      annotations:
+        kubernetes.io/service-account/name: saName
+    ```
+  * Map the SA with a Role & RoleBinding by making the `kind: ServiceAccount` in the rolebinding. 
+  * Update the SA of the pod/deployment to be the created SA. This step ensures that the token is mounted to the pod/deployment. 
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:   
+    name: pod-name
+  spec:
+    containers:
+      - name: pod-container
+        image: image-name
+        ports:
+          containerPort: 8080
+    serviceAccountName: SA-name
+    automountServiceAccountToken: true
+  ```
+  * Acces the token from the mounted folder.
