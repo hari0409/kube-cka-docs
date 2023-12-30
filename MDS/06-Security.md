@@ -196,6 +196,7 @@ users:
     * ABAC (Assigned for each user based on requirement)
     * RBAC (Assigna role & permissions for each role)
     * Webhooks (3rd Party Authentication)
+* The current implmentation of authorisation can be found by checking the **`--authorization-mode`** field in the kube-apiserver.yaml pod config file.
 * RBAC Namespaced=True:
     * When we want to make config for namespace resources, we need to make `Role` & `RoleBdining`.
     * Role would require `apiGroups`, `resources`, `verbs`,`resourceNames` to which we need to give access.
@@ -232,6 +233,7 @@ users:
       apiGroup: rbac.authorization.k8s.io
     ```
 * RBAC Namespaced=False:
+    * **IMPORTANT: This can be used for the modification of access of resources across namespaces.**
     * Here we would be creating the same but for the cluster resources. We can also do for the namespace resource which will lead the resource under all the namespace to be accessible.
     * This is given as ClusterRole
     ```yaml
@@ -326,7 +328,7 @@ kubectl create secret docker-registry secretName
 --docker-password=Password 
 --docker-email=user@gmail.com
 ```
-* Then we can specify the security in the pod as the field `imagePullSecrets` with an array of secrets
+* Then we can specify the security in the pod as the field **`imagePullSecrets`** with an array of secrets
 ```yaml
 apiVersion: v1
 kind: Pod
