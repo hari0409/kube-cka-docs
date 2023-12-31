@@ -1,1 +1,1 @@
-kubena <namespace>
+kubectl delete pvc pvcName
