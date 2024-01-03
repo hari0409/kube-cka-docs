@@ -79,3 +79,65 @@ http://service-name.namespace.svc.cluster.local
 * The DNS configuration of a server(pod & CoreDNS) is present in the `/etc/resolv.conf` file of the pods which will be done automatically by k8s. In case of pods, it will be containing the IP of the DNS service used to access the DNS. In case of the DNS server, it will contain all the IP-NAME mapping.
 
 ## Ingress:
+* This is used as a proxy for the kubernetes. This contains two part.
+    * Ingress Controller (The proxy which will be deployed in the cluster)
+    * Ingress Resource (The rules which will be deployed in hte Controller to route to different services based on those rules).
+* The process of creating a Ingress Controller is given [here](../Complete-Ingress-Files/).
+* The Ingress Resources are used for implementing the rules where the fields required are:
+    * host [array]
+    * paths
+        * path
+        * pathType
+        * backend
+            * service
+                * name
+            * port
+                * number
+* We can also include some annotatino for giving additional proerpty for the nginx server.
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  name: nginx-ingress
+  namespace: app-space
+  annotations:  
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          service:
+            name: wear-service
+            port:
+              number: 8080
+        path: /wear
+        pathType: Exact
+      - backend:
+          service:
+            name: video-service
+            port:
+              number: 8080
+        path: /watch
+        pathType: Exact
+    - host: domain.com
+      http:
+        paths:
+        - backend:
+            service:
+                name: wear-service
+                port:
+                number: 8080
+            path: /wear
+            pathType: Exact
+        - backend:
+            service:
+                name: video-service
+                port:
+                number: 8080
+            path: /watch
+            pathType: Exact
+status:
+  loadBalancer: {}
+```
