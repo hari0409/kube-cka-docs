@@ -91,8 +91,8 @@ http://service-name.namespace.svc.cluster.local
         * backend
             * service
                 * name
-            * port
-                * number
+                * port
+                    * number
 * We can also include some annotatino for giving additional proerpty for the nginx server.
 ```yaml
 apiVersion: networking.k8s.io/v1
