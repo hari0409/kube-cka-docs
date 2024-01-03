@@ -56,7 +56,10 @@ http://service-name.namespace.svc
 http://service-name.namespace.svc.cluster.local
 ``` 
 * The URL for accesing the pod will be `IP-DASHED.namespace.svc.cluster.local`.
-* The CoreDNS is created as a `ReplicaSet` & the configration for it is present as `ConfigMap`. The access to the CoreDNS is done by means of a `service object`. 
+* Components of CoreDNS
+    * Pods deployed as `ReplicaSet`
+    * Access the ReplicaSet by means of a `ClusterIP Service`
+    * Store the configuration as a `ConfigMap`
 * The configuration for the Configfile will be containing the `root domain name` like
 ```conf
 .:53 {

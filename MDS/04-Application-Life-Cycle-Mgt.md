@@ -15,8 +15,8 @@
 ```
 
 ## Commands & Arguments:
-* To override the CMD of an image, use `args: ["value"]` in the pod file.
-* To overrise the ENTRYPOINT of an image, use `command: ["sleep"]` in the pod.
+* To override the CMD of an image, use `args: ["value"]` in the pod file (array of values)
+* To overrise the ENTRYPOINT of an image, use `command: ["sleep"]` in the pod (array of values)
 
 ## Environemtnal Variable:
 * This can be used in a container & can be specified in the pod in three ways:

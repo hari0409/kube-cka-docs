@@ -1,0 +1,1 @@
+kubectl create ingress <ingress-name> --rule="hostname/path*=service:port"
