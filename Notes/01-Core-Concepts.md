@@ -173,4 +173,4 @@ status: {}
 ## Declarative Method: (better way)
 * To apply the config file, `kubectl apply -f cong.yaml` if it doenst exists it will create else it will update.
 * To give a directory of files, `kubectl apply -k directory`. 
-* To expose a pod which will automatically create a Service for it, we can use `kubectl expose pod podName --port=PORT --name SERVICENAME`.
+* To expose a pod which will automatically create a Service for it, we can use `kubectl expose pod podName --port=PORT --target-port=PORT --type=NodePort|ClusterIP --name SERVICENAME`.
